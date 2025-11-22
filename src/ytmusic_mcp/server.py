@@ -128,6 +128,124 @@ def ytm_create_playlist_ytmusic(title: str, description: str, tracks: List[str])
         return {"error": str(e)}
 
 @mcp.tool()
+def ytm_get_browser_auth_instructions() -> Dict[str, Any]:
+    """
+    Get instructions for setting up browser authentication.
+    This avoids API quotas completely.
+    
+    Returns:
+        Instructions and current status
+    """
+    from pathlib import Path
+    
+    # Check if already configured
+    config_path = Path.home() / ".config" / "ytmusic-mcp" / "browser.json"
+    is_configured = browser_auth_manager.is_authenticated()
+    
+    instructions = """
+To set up browser authentication (no API quotas!):
+
+1. Open Chrome and go to https://music.youtube.com
+2. Make sure you're logged in to your Google account
+3. Open Developer Tools (F12 or Cmd+Option+I on Mac)
+4. Go to the Network tab
+5. Click on "Library" or scroll down to trigger requests
+6. Find a POST request to 'browse' (look for 'browse?prettyPrint=false')
+7. Right-click on it → Copy → Copy as cURL
+8. Send the cURL command using ytm_setup_browser_auth_from_curl
+
+This gives you unlimited playlist creation with no daily limits!
+"""
+    
+    return {
+        "configured": is_configured,
+        "config_path": str(config_path),
+        "instructions": instructions
+    }
+
+@mcp.tool()
+def ytm_setup_browser_auth_from_curl(curl_command: str) -> Dict[str, Any]:
+    """
+    Set up browser authentication using a cURL command from Chrome DevTools.
+    This is the recommended method to avoid API quotas.
+    
+    Args:
+        curl_command: The full cURL command copied from Chrome DevTools
+        
+    Returns:
+        Setup status and result
+    """
+    import re
+    from pathlib import Path
+    
+    try:
+        # Parse the cURL command
+        # Join lines and clean up backslashes
+        curl_text = " ".join(curl_command.split("\\\n"))
+        curl_text = " ".join(curl_text.split("\\"))
+        
+        headers = {}
+        
+        # Extract headers
+        header_pattern = r"-H\s+['\"]([^'\"]+)['\"]"
+        for match in re.finditer(header_pattern, curl_text):
+            header_line = match.group(1)
+            if ":" in header_line:
+                key, value = header_line.split(":", 1)
+                headers[key.strip().lower()] = value.strip()
+        
+        # Extract cookies
+        cookie_pattern = r"-b\s+['\"]([^'\"]+)['\"]"
+        cookie_match = re.search(cookie_pattern, curl_text)
+        if cookie_match:
+            headers["cookie"] = cookie_match.group(1).strip()
+        
+        if not headers.get("cookie"):
+            return {
+                "success": False,
+                "error": "No cookies found in cURL command. Make sure you're logged in and copied from a POST request."
+            }
+        
+        # Create browser.json structure
+        browser_json = {
+            "User-Agent": headers.get("user-agent", "Mozilla/5.0"),
+            "Accept": headers.get("accept", "*/*"),
+            "Accept-Language": headers.get("accept-language", "en-US,en;q=0.9"),
+            "Content-Type": headers.get("content-type", "application/json"),
+            "X-Goog-AuthUser": headers.get("x-goog-authuser", "0"),
+            "x-origin": headers.get("x-origin", "https://music.youtube.com"),
+            "Cookie": headers["cookie"]
+        }
+        
+        if "authorization" in headers:
+            browser_json["Authorization"] = headers["authorization"]
+        
+        # Save to user config directory
+        config_dir = Path.home() / ".config" / "ytmusic-mcp"
+        config_dir.mkdir(parents=True, exist_ok=True)
+        config_path = config_dir / "browser.json"
+        
+        import json
+        with open(config_path, "w") as f:
+            json.dump(browser_json, f, indent=2)
+        
+        # Test it
+        validation = browser_auth_manager.validate_auth()
+        
+        return {
+            "success": True,
+            "config_path": str(config_path),
+            "valid": validation.get("valid", False),
+            "message": "Browser authentication configured successfully! You can now create unlimited playlists."
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+@mcp.tool()
 def ytm_setup_browser_auth(headers_raw: str) -> str:
     """
     Set up browser authentication using headers from YouTube Music.

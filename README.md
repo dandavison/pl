@@ -80,10 +80,14 @@ Add the server to your MCP configuration file (e.g., `claude_desktop_config.json
 
 ### Browser Authentication Tools (No Quotas)
 
-#### `ytm_setup_browser_auth`
-Set up browser authentication using headers from YouTube Music.
-- **Input**: `headers_raw` (copied from browser)
-- **Output**: Success message
+#### `ytm_get_browser_auth_instructions`
+Get step-by-step instructions for setting up browser auth.
+- **Output**: Instructions and current status
+
+#### `ytm_setup_browser_auth_from_curl`
+Set up browser authentication using cURL from Chrome.
+- **Input**: `curl_command` (copied from Chrome DevTools)
+- **Output**: Success status and config location
 
 #### `ytm_validate_browser_auth`
 Check if browser authentication is working.

@@ -8,9 +8,24 @@ from ytmusicapi import YTMusic
 
 class BrowserAuthManager:
     """Manage browser-based authentication for YouTube Music."""
-
-    def __init__(self, browser_json_path: str = "browser.json"):
-        self.browser_json_path = Path(browser_json_path)
+    
+    def __init__(self, browser_json_path: str = None):
+        if browser_json_path is None:
+            # Look in multiple locations
+            possible_paths = [
+                Path.home() / ".config" / "ytmusic-mcp" / "browser.json",  # User config dir
+                Path.home() / ".ytmusic" / "browser.json",  # Home directory
+                Path("browser.json"),  # Current directory
+            ]
+            for path in possible_paths:
+                if path.exists():
+                    self.browser_json_path = path
+                    break
+            else:
+                # Default to user config directory
+                self.browser_json_path = Path.home() / ".config" / "ytmusic-mcp" / "browser.json"
+        else:
+            self.browser_json_path = Path(browser_json_path)
         self._ytmusic: Optional[YTMusic] = None
 
     def is_authenticated(self) -> bool:
