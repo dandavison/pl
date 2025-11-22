@@ -1,0 +1,10 @@
+{
+  "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+  "Accept": "*/*",
+  "Accept-Language": "en-US,en;q=0.9,pt-PT;q=0.8,pt;q=0.7,es-CO;q=0.6,es;q=0.5",
+  "Content-Type": "application/json",
+  "X-Goog-AuthUser": "0",
+  "x-origin": "https://music.youtube.com",
+  "Cookie": "_ga=GA1.1.886406704.1742686595; _ga_5RPMD1E2GM=GS1.1.1742686594.1.1.1742686600.54.0.0; _ga_5JSYX2Q357=GS1.1.1742686594.1.0.1742686600.54.0.0; HSID=AtKPSpaVhOzk9DtvP; SSID=ARYI8iwbuqr_SEyTx; APISID=0zeyOHb9uTSqp5Cg/AW6gXKDJObgJG5g9M; SAPISID=Tjh-b06yy71VQzQe/AcWOr4fWZ9HjQizIy; __Secure-1PAPISID=Tjh-b06yy71VQzQe/AcWOr4fWZ9HjQizIy; __Secure-3PAPISID=Tjh-b06yy71VQzQe/AcWOr4fWZ9HjQizIy; LOGIN_INFO=AFmmF2swRAIgS70XAL7B-60_qvy50SOk6J7-JYOzBgQWaPXBlsEQgIkCIDtvlFuFs80b-3avic9XvuozCkODF9vioQciAYMZDK1k:QUQ3MjNmeDNZcnVrZTlZMHZfQmtheVNRUWZiemtFS2RJT1dsODkzSF9vdjJ4ejZ2RXNhUDRKSj^C\n\ud83d\udcdd Detected cURL format\n\n\u274c Could not extract headers/cookies\n\nMake sure you:\n1. Are logged in to YouTube Music\n2. Copied from a POST request to ",
+  "Authorization": "SAPISIDHASH 1763843411_dc7fd1bd6edd61bf6e5c8907092f5f763e7563f1_u SAPISID1PHASH 1763843411_dc7fd1bd6edd61bf6e5c8907092f5f763e7563f1_u SAPISID3PHASH 1763843411_dc7fd1bd6edd61bf6e5c8907092f5f763e7563f1_u"
+}
