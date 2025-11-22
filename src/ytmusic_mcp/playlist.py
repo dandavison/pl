@@ -47,4 +47,3 @@ class PlaylistManager:
             "track_count": len(video_ids),
             "details": results
         }
-

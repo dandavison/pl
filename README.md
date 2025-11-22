@@ -1,12 +1,14 @@
 # YouTube Music MCP Server
 
-An MCP server that allows AI agents to create playlists on YouTube Music.
+An MCP server that allows AI agents to intelligently search for tracks and create playlists on YouTube/YouTube Music using the YouTube Data API v3.
 
 ## Features
 
-- **Authentication**: OAuth flow integrated into the chat interface.
-- **Batch Playlist Creation**: Create a playlist from a list of song queries (e.g., "Song Name Artist"). The server searches for each track and adds the best match.
-- **Feedback**: Returns a detailed summary of found and missing tracks.
+- **Authentication**: OAuth flow integrated into the chat interface using YouTube Data API v3
+- **Intelligent Track Search**: Search for multiple tracks and return detailed metadata for LLM selection
+- **Smart Playlist Creation**: Create playlists with specific video IDs after intelligent selection
+- **Legacy Support**: Still supports the original YTMusic API for simple batch playlist creation
+- **Metadata-Rich Results**: Returns information about remixes, remasters, view counts, and more
 
 ## Installation
 
@@ -49,20 +51,57 @@ Add the server to your MCP configuration file (e.g., `claude_desktop_config.json
 
 ## Tools
 
-### `ytm_get_auth_url`
-Initiates the authentication process.
+### Authentication Tools
+
+#### `ytm_get_auth_url`
+Initiates the OAuth authentication process.
 - **Inputs**: `client_id`, `client_secret`
-- **Output**: Verification URL and user code.
+- **Output**: Verification URL, user code, and device code
 
-### `ytm_authenticate`
-Completes authentication after you have authorized the app.
-- **Inputs**: `device_code` (returned from previous step)
-- **Output**: Success message.
+#### `ytm_authenticate`
+Completes authentication after user authorization.
+- **Inputs**: `device_code` (from previous step)
+- **Output**: Success message
 
-### `ytm_create_playlist`
-Creates a playlist and adds tracks.
+### Playlist Creation Tools
+
+#### `ytm_search_tracks` (NEW)
+Search for multiple tracks with detailed metadata for intelligent selection.
+- **Inputs**: `queries` (List of search strings like "Artist Song Title")
+- **Output**: Dictionary mapping each query to list of results with:
+  - Video ID, title, channel, description
+  - View count, like count, duration
+  - Flags for remix/remaster detection
+  - Published date and thumbnails
+
+#### `ytm_create_playlist_from_ids` (NEW)
+Create a playlist with specific video IDs after intelligent selection.
+- **Inputs**: 
+  - `title`: Playlist title
+  - `description`: Playlist description
+  - `video_ids`: List of YouTube video IDs
+- **Output**: Playlist ID, YouTube/YouTube Music URLs, success metrics
+
+#### `ytm_create_playlist_ytmusic` (LEGACY)
+Creates a playlist using YTMusic API (takes first search result).
 - **Inputs**: `title`, `description`, `tracks` (List of strings)
-- **Output**: Playlist URL and track summary.
+- **Output**: Playlist URL and track summary
+- **Note**: Prefer using search + create_from_ids for better control
+
+## Intelligent Playlist Creation Workflow
+
+The new tools enable a smarter playlist creation workflow:
+
+1. **Search Phase**: Use `ytm_search_tracks` to get multiple results per query
+2. **Selection Phase**: LLM analyzes results based on criteria:
+   - Prefer original recordings over remixes
+   - Prefer original versions over remasters
+   - Consider channel authority (official/label channels)
+   - Avoid full album uploads when searching for single tracks
+   - Consider view count and engagement metrics
+3. **Creation Phase**: Use `ytm_create_playlist_from_ids` with selected video IDs
+
+This approach ensures better quality playlists compared to blindly taking the first search result.
 
 ## Development
 

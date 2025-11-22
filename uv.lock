@@ -1019,6 +1019,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "mcp" },
+    { name = "requests" },
     { name = "ytmusicapi" },
 ]
 
@@ -1032,6 +1033,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "mcp", specifier = ">=1.0.0" },
+    { name = "requests", specifier = ">=2.32.5" },
     { name = "ytmusicapi", specifier = ">=1.0.0" },
 ]
 
