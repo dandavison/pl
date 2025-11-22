@@ -4,10 +4,12 @@ An MCP server that allows AI agents to intelligently search for tracks and creat
 
 ## Features
 
-- **Authentication**: OAuth flow integrated into the chat interface using YouTube Data API v3
+- **Dual Authentication Methods**:
+  - OAuth (YouTube Data API v3) - Official but has quotas
+  - Browser Auth (ytmusicapi) - No quotas, uses web interface
 - **Intelligent Track Search**: Search for multiple tracks and return detailed metadata for LLM selection
 - **Smart Playlist Creation**: Create playlists with specific video IDs after intelligent selection
-- **Legacy Support**: Still supports the original YTMusic API for simple batch playlist creation
+- **No API Quota Limits** (with browser auth): Create unlimited playlists
 - **Metadata-Rich Results**: Returns information about remixes, remasters, view counts, and more
 
 ## Installation
@@ -21,6 +23,26 @@ Prerequisites: `uv` (or pip) and Python 3.10+.
    ```
 
 ## Configuration
+
+### Method 1: Browser Authentication (Recommended - No Quotas)
+
+Extract authentication from your browser session:
+
+```bash
+# Automated extraction (opens browser)
+uv run python extract_browser_auth.py
+
+# Or manual setup
+uv run python setup_browser_auth.py
+```
+
+This method:
+- ✅ No API quotas - unlimited playlist creation
+- ✅ Uses your existing YouTube Music login
+- ✅ Credentials valid for ~2 years
+- ⚠️ Less suitable for production apps
+
+### Method 2: OAuth API (Limited by Quotas)
 
 You need a Google Cloud Project with the **YouTube Data API v3** enabled.
 1. Go to [Google Cloud Console](https://console.cloud.google.com/).
@@ -51,7 +73,28 @@ Add the server to your MCP configuration file (e.g., `claude_desktop_config.json
 
 ## Tools
 
-### Authentication Tools
+### Browser Authentication Tools (No Quotas)
+
+#### `ytm_setup_browser_auth`
+Set up browser authentication using headers from YouTube Music.
+- **Input**: `headers_raw` (copied from browser)
+- **Output**: Success message
+
+#### `ytm_validate_browser_auth`
+Check if browser authentication is working.
+- **Output**: Validation status
+
+#### `ytm_search_browser`
+Search using browser auth (no quotas).
+- **Input**: `queries` (list of search strings)
+- **Output**: Detailed search results
+
+#### `ytm_create_playlist_browser`
+Create playlist using browser auth (no quotas).
+- **Input**: `title`, `description`, `tracks`
+- **Output**: Playlist URL and details
+
+### OAuth API Tools (Subject to Quotas)
 
 #### `ytm_get_auth_url`
 Initiates the OAuth authentication process.

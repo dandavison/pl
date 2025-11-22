@@ -54,7 +54,7 @@ def test_complete_oauth(mock_oauth_credentials, mock_refreshing_token, tmp_path)
     mock_refreshing_token.assert_called()
     # Check that store_token was called
     mock_refreshing_token.return_value.store_token.assert_called_with(str(tmp_path / "oauth.json"))
-    
+
     # Check that credentials were saved
     creds_path = tmp_path / "oauth_creds.json"
     assert creds_path.exists()
