@@ -8,7 +8,7 @@ from ytmusicapi import YTMusic
 
 class BrowserAuthManager:
     """Manage browser-based authentication for YouTube Music."""
-    
+
     def __init__(self, browser_json_path: str = None):
         if browser_json_path is None:
             # Look in multiple locations
