@@ -15,10 +15,10 @@ class PlaylistManager:
         if isinstance(playlist_id, dict):
             # Handle error case or unexpected return
             raise RuntimeError(f"Failed to create playlist: {playlist_id}")
-        
+
         results = []
         video_ids = []
-        
+
         for query in queries:
             search_results = self.ytmusic.search(query, filter="songs", limit=1)
             if search_results:
@@ -36,11 +36,11 @@ class PlaylistManager:
                     "query": query,
                     "found": False
                 })
-        
+
         # Add to playlist
         if video_ids:
             self.ytmusic.add_playlist_items(playlist_id, video_ids)
-            
+
         return {
             "playlist_id": playlist_id,
             "playlist_url": f"https://music.youtube.com/playlist?list={playlist_id}",

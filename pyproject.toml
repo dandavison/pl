@@ -21,7 +21,8 @@ build-backend = "hatchling.build"
 dev = [
     "ruff",
     "ty",
-    "pytest"
+    "pytest",
+    "pytest-asyncio>=1.3.0",
 ]
 
 [tool.ruff]

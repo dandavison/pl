@@ -76,7 +76,7 @@ Search for multiple tracks with detailed metadata for intelligent selection.
 
 #### `ytm_create_playlist_from_ids` (NEW)
 Create a playlist with specific video IDs after intelligent selection.
-- **Inputs**: 
+- **Inputs**:
   - `title`: Playlist title
   - `description`: Playlist description
   - `video_ids`: List of YouTube video IDs

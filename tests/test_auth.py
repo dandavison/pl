@@ -32,10 +32,16 @@ def test_start_oauth(mock_oauth_credentials):
 
 def test_complete_oauth(mock_oauth_credentials, mock_refreshing_token, tmp_path):
     # Setup
-    manager = AuthManager(oauth_path=str(tmp_path / "oauth.json"))
+    manager = AuthManager(
+        oauth_path=str(tmp_path / "oauth.json"),
+        creds_path=str(tmp_path / "oauth_creds.json")
+    )
 
     # Simulate start
     mock_creds_instance = mock_oauth_credentials.return_value
+    # Mock the client_id and client_secret as strings
+    mock_creds_instance.client_id = "test_client_id"
+    mock_creds_instance.client_secret = "test_client_secret"
     manager._pending_credentials = mock_creds_instance
 
     # Mock token response
@@ -48,4 +54,13 @@ def test_complete_oauth(mock_oauth_credentials, mock_refreshing_token, tmp_path)
     mock_refreshing_token.assert_called()
     # Check that store_token was called
     mock_refreshing_token.return_value.store_token.assert_called_with(str(tmp_path / "oauth.json"))
+    
+    # Check that credentials were saved
+    creds_path = tmp_path / "oauth_creds.json"
+    assert creds_path.exists()
+    import json
+    with open(creds_path) as f:
+        saved_creds = json.load(f)
+    assert saved_creds["client_id"] == "test_client_id"
+    assert saved_creds["client_secret"] == "test_client_secret"
 
