@@ -132,17 +132,17 @@ def ytm_setup_browser_auth(headers_raw: str) -> str:
     """
     Set up browser authentication using headers from YouTube Music.
     This avoids API quotas by using the same auth as the web interface.
-    
+
     To get headers:
     1. Open YouTube Music in browser (music.youtube.com)
     2. Open Developer Tools (F12)
     3. Go to Network tab
     4. Find a POST request to /browse
     5. Copy request headers
-    
+
     Args:
         headers_raw: Raw headers copied from browser
-    
+
     Returns:
         Success or error message
     """
@@ -155,7 +155,7 @@ def ytm_setup_browser_auth(headers_raw: str) -> str:
 def ytm_validate_browser_auth() -> Dict[str, Any]:
     """
     Validate that browser authentication is working.
-    
+
     Returns:
         Dictionary with validation status and details
     """
@@ -164,7 +164,7 @@ def ytm_validate_browser_auth() -> Dict[str, Any]:
             "valid": False,
             "message": "No browser authentication found. Run ytm_setup_browser_auth first."
         }
-    
+
     return browser_auth_manager.validate_auth()
 
 @mcp.tool()
@@ -172,17 +172,17 @@ def ytm_search_browser(queries: List[str]) -> Dict[str, Any]:
     """
     Search for tracks using browser authentication (no API quotas).
     Returns detailed results for intelligent selection.
-    
+
     Args:
         queries: List of search queries
-        
+
     Returns:
         Dictionary mapping queries to search results
     """
     try:
         if not browser_auth_manager.is_authenticated():
             return {"error": "Browser auth not configured. Run ytm_setup_browser_auth first."}
-        
+
         ytmusic = browser_auth_manager.get_ytmusic()
         manager = BrowserPlaylistManager(ytmusic)
         return manager.search_tracks_detailed(queries)
@@ -195,19 +195,19 @@ def ytm_create_playlist_browser(title: str, description: str, tracks: List[str])
     """
     Create playlist using browser authentication (no API quotas).
     This method searches for tracks and adds the best matches automatically.
-    
+
     Args:
         title: Playlist title
         description: Playlist description
         tracks: List of search queries
-        
+
     Returns:
         Dictionary with playlist details and results
     """
     try:
         if not browser_auth_manager.is_authenticated():
             return {"error": "Browser auth not configured. Run ytm_setup_browser_auth first."}
-        
+
         ytmusic = browser_auth_manager.get_ytmusic()
         manager = BrowserPlaylistManager(ytmusic)
         return manager.search_and_create_playlist(title, description, tracks)

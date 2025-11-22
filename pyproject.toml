@@ -5,6 +5,7 @@ description = "MCP server for YouTube Music"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "browser-cookie3>=0.20.1",
     "mcp>=1.0.0",
     "playwright>=1.56.0",
     "requests>=2.32.5",

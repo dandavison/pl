@@ -29,12 +29,18 @@ Prerequisites: `uv` (or pip) and Python 3.10+.
 Extract authentication from your browser session:
 
 ```bash
-# Automated extraction (opens browser)
-uv run python extract_browser_auth.py
+# Option 1: Extract from browser cookies (easiest)
+uv run python extract_from_browser_cookies.py
 
-# Or manual setup
+# Option 2: Manual extraction from existing session
+uv run python extract_browser_auth_manual.py
+
+# Option 3: Paste headers directly
 uv run python setup_browser_auth.py
 ```
+
+**Note**: Google blocks automated login ("This browser may not be secure").
+Use the manual extraction from your existing browser session instead.
 
 This method:
 - ✅ No API quotas - unlimited playlist creation
