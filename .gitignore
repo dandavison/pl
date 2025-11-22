@@ -7,3 +7,8 @@ oauth.json
 .mypy_cache/
 .ruff_cache/
 
+
+# OAuth files
+oauth.json
+oauth_creds.json
+oauth*.json
