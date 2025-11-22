@@ -29,14 +29,13 @@ Prerequisites: `uv` (or pip) and Python 3.10+.
 Extract authentication from your browser session:
 
 ```bash
-# Option 1: Extract from browser cookies (easiest)
-uv run python extract_from_browser_cookies.py
+# For Chrome users (recommended):
+uv run python extract_from_curl.py  # Paste "Copy as cURL" output
 
-# Option 2: Manual extraction from existing session
-uv run python extract_browser_auth_manual.py
-
-# Option 3: Paste headers directly
-uv run python setup_browser_auth.py
+# Alternative methods:
+uv run python extract_from_browser_cookies.py  # Extract cookies directly
+uv run python extract_browser_auth_manual.py   # Guided extraction
+uv run python setup_browser_auth.py            # Paste raw headers
 ```
 
 **Note**: Google blocks automated login ("This browser may not be secure").

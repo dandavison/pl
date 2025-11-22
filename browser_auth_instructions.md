@@ -6,6 +6,21 @@ Google blocks automated browser login for security ("This browser or app may not
 
 ## Method 1: Quick Manual Setup (Recommended)
 
+### For Modern Chrome Users (2024+)
+
+Modern Chrome has a different DevTools interface. Here's the exact process:
+
+1. **Open YouTube Music** and log in
+2. **Open DevTools** (F12 or Cmd+Option+I)
+3. **Go to Network tab**
+4. **Trigger a request**: Click "Library" or scroll down
+5. **Find the POST request** to `browse?prettyPrint=false`
+6. **Right-click on the request** → **Copy** → **Copy as cURL**
+7. **Run**: `uv run python extract_from_curl.py`
+8. **Paste** the cURL command and press Enter twice
+
+The script will extract all headers from the cURL command automatically!
+
 ### Step 1: Get Your Headers
 
 1. **Open YouTube Music** in your regular browser (Chrome/Firefox/Safari)
@@ -19,18 +34,26 @@ Google blocks automated browser login for security ("This browser or app may not
    - Look for `browse?` in the Name column
    - Make sure Method is `POST` (not GET)
 7. **Copy the headers**:
+   - **Chrome (Modern)**: Right-click on the request → Copy → Copy as cURL
+     - Then extract headers from the cURL command, OR
+     - Right-click → Copy → Copy as fetch → Extract headers from JavaScript
    - **Firefox**: Right-click → Copy → Copy Request Headers
-   - **Chrome**: Click request → Headers tab → Select and copy all Request Headers
    - **Safari**: Click request → Headers → Copy all
 
 ### Step 2: Save the Headers
 
-Run this command and paste your headers:
+For modern Chrome (easiest):
+```bash
+# Paste the cURL command from Chrome
+uv run python extract_from_curl.py
+```
+
+For raw headers:
 ```bash
 uv run python setup_browser_auth.py
 ```
 
-Or use the new manual extractor:
+Or use the guided extractor:
 ```bash
 uv run python extract_browser_auth_manual.py
 ```

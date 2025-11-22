@@ -28,17 +28,17 @@ def extract_from_existing_session() -> Optional[Dict[str, str]]:
     print("6. Find a POST request to 'browse' endpoint")
     print("7. Right-click it and copy request headers")
     print("\n" + "=" * 60)
-    
+
     # Ask user to confirm
     input("Press Enter to open YouTube Music in your browser...")
-    
+
     # Open YouTube Music
     webbrowser.open("https://music.youtube.com")
-    
+
     print("\n📋 After copying the headers, paste them below.")
     print("   (Press Enter twice when done)")
     print("-" * 60)
-    
+
     # Collect headers
     lines = []
     empty_count = 0
@@ -54,19 +54,19 @@ def extract_from_existing_session() -> Optional[Dict[str, str]]:
             lines.append(line)
         except (EOFError, KeyboardInterrupt):
             break
-    
+
     if not lines or all(not line for line in lines):
         return None
-    
+
     # Parse headers
     headers_text = "\n".join(lines)
     headers = {}
-    
+
     for line in lines:
         if ': ' in line:
             key, value = line.split(': ', 1)
             headers[key.lower()] = value
-    
+
     # Extract required headers for ytmusicapi
     required_headers = {
         "User-Agent": headers.get("user-agent", ""),
@@ -77,14 +77,14 @@ def extract_from_existing_session() -> Optional[Dict[str, str]]:
         "x-origin": "https://music.youtube.com",
         "Cookie": headers.get("cookie", "")
     }
-    
+
     # Check if we have the essential cookie
     if not required_headers["Cookie"]:
         print("❌ No cookie found in headers. Make sure you:")
         print("   - Are logged in to YouTube Music")
         print("   - Copied headers from a POST request")
         return None
-    
+
     return required_headers
 
 
@@ -99,28 +99,28 @@ def validate_browser_auth(filepath: str = "browser.json") -> bool:
     """Test if the browser auth works."""
     try:
         from ytmusicapi import YTMusic
-        
+
         print("\n🔍 Testing authentication...")
         ytmusic = YTMusic(filepath)
-        
+
         # Try a simple search
         results = ytmusic.search("test", limit=1)
-        
+
         if results:
             print("✅ Authentication is working!")
-            
+
             # Try to get user info
             try:
                 playlists = ytmusic.get_library_playlists(limit=1)
                 print("✅ Can access your library")
             except:
                 print("⚠️  Can search but not access library (might be normal)")
-            
+
             return True
         else:
             print("⚠️  Auth saved but search returned no results")
             return False
-            
+
     except Exception as e:
         print(f"❌ Authentication test failed: {e}")
         return False
@@ -130,10 +130,10 @@ def main():
     """Main function."""
     print("\n🔒 Note: Google blocks automated browser login for security")
     print("   This tool uses your EXISTING browser session instead\n")
-    
+
     # Extract headers
     headers = extract_from_existing_session()
-    
+
     if not headers:
         print("\n❌ Failed to extract headers")
         print("\nTroubleshooting:")
@@ -142,10 +142,10 @@ def main():
         print("3. In Firefox: Right-click → Copy → Copy Request Headers")
         print("4. In Chrome: Click request → Headers tab → Copy all Request Headers")
         return 1
-    
+
     # Save to browser.json
     save_browser_json(headers)
-    
+
     # Validate
     if validate_browser_auth():
         print("\n🎉 Success! You can now use browser authentication")
