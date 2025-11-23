@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+"""Test if browser auth would work instead"""
+
+print("The issue is that ytmusicapi's OAuth uses the YouTube Data API scope")
+print("but sends requests to the internal YouTube Music API (/youtubei/v1/)")
+print("")
+print("There are two options:")
+print("")
+print("1. Use browser authentication instead of OAuth")
+print("   - Go to music.youtube.com in your browser")
+print("   - Open developer tools (F12)")
+print("   - Go to Network tab")
+print("   - Find a request to /youtubei/v1/")
+print("   - Copy the request headers")
+print("   - Run: uv run ytmusicapi browser")
+print("   - Paste the headers")
+print("")
+print("2. Use the YouTube Data API v3 directly to create playlists")
+print("   - This would work with our current OAuth token")
+print("   - But playlists would be in regular YouTube, not YouTube Music")
+print("")
+print("Which approach would you prefer?")
