@@ -1,8 +1,8 @@
 """Browser authentication support for YouTube Music."""
 
-import json
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
 from ytmusicapi import YTMusic
 
 
@@ -13,7 +13,10 @@ class BrowserAuthManager:
         if browser_json_path is None:
             # Look in multiple locations
             possible_paths = [
-                Path.home() / ".config" / "ytmusic-mcp" / "browser.json",  # User config dir
+                Path.home()
+                / ".config"
+                / "ytmusic-mcp"
+                / "browser.json",  # User config dir
                 Path.home() / ".ytmusic" / "browser.json",  # Home directory
                 Path("browser.json"),  # Current directory
             ]
@@ -23,7 +26,9 @@ class BrowserAuthManager:
                     break
             else:
                 # Default to user config directory
-                self.browser_json_path = Path.home() / ".config" / "ytmusic-mcp" / "browser.json"
+                self.browser_json_path = (
+                    Path.home() / ".config" / "ytmusic-mcp" / "browser.json"
+                )
         else:
             self.browser_json_path = Path(browser_json_path)
         self._ytmusic: Optional[YTMusic] = None
@@ -58,7 +63,7 @@ class BrowserAuthManager:
         auth_json = ytmusicapi.setup(headers_raw=headers_raw)
 
         # Save to file
-        with open(self.browser_json_path, 'w') as f:
+        with open(self.browser_json_path, "w") as f:
             f.write(auth_json)
 
         # Clear cached instance
@@ -86,13 +91,13 @@ class BrowserAuthManager:
                 "valid": True,
                 "can_access_library": True,
                 "can_search": len(search_results) > 0,
-                "message": "Browser authentication is working"
+                "message": "Browser authentication is working",
             }
         except Exception as e:
             return {
                 "valid": False,
                 "error": str(e),
-                "message": "Browser authentication failed"
+                "message": "Browser authentication failed",
             }
 
 
@@ -103,11 +108,7 @@ class BrowserPlaylistManager:
         self.ytmusic = ytmusic
 
     def search_and_create_playlist(
-        self,
-        title: str,
-        description: str,
-        queries: list[str],
-        privacy: str = "PRIVATE"
+        self, title: str, description: str, queries: list[str], privacy: str = "PRIVATE"
     ) -> Dict[str, Any]:
         """
         Search for tracks and create a playlist using browser auth.
@@ -126,9 +127,7 @@ class BrowserPlaylistManager:
         """
         # Create playlist
         playlist_id = self.ytmusic.create_playlist(
-            title=title,
-            description=description,
-            privacy_status=privacy
+            title=title, description=description, privacy_status=privacy
         )
 
         if isinstance(playlist_id, dict) and "error" in playlist_id:
@@ -148,34 +147,34 @@ class BrowserPlaylistManager:
                     best_match = self._select_best_match(search_results, query)
 
                     if best_match:
-                        video_ids.append(best_match['videoId'])
-                        results.append({
-                            "query": query,
-                            "found": True,
-                            "title": best_match.get('title'),
-                            "artists": ", ".join(a['name'] for a in best_match.get('artists', [])),
-                            "album": best_match.get('album', {}).get('name'),
-                            "duration": best_match.get('duration'),
-                            "videoId": best_match['videoId']
-                        })
+                        video_ids.append(best_match["videoId"])
+                        results.append(
+                            {
+                                "query": query,
+                                "found": True,
+                                "title": best_match.get("title"),
+                                "artists": ", ".join(
+                                    a["name"] for a in best_match.get("artists", [])
+                                ),
+                                "album": best_match.get("album", {}).get("name"),
+                                "duration": best_match.get("duration"),
+                                "videoId": best_match["videoId"],
+                            }
+                        )
                     else:
-                        results.append({
-                            "query": query,
-                            "found": False,
-                            "reason": "No suitable match found"
-                        })
+                        results.append(
+                            {
+                                "query": query,
+                                "found": False,
+                                "reason": "No suitable match found",
+                            }
+                        )
                 else:
-                    results.append({
-                        "query": query,
-                        "found": False,
-                        "reason": "No search results"
-                    })
+                    results.append(
+                        {"query": query, "found": False, "reason": "No search results"}
+                    )
             except Exception as e:
-                results.append({
-                    "query": query,
-                    "found": False,
-                    "error": str(e)
-                })
+                results.append({"query": query, "found": False, "error": str(e)})
 
         # Add tracks to playlist
         if video_ids:
@@ -191,7 +190,7 @@ class BrowserPlaylistManager:
             "youtube_url": f"https://www.youtube.com/playlist?list={playlist_id}",
             "tracks_added": len(video_ids),
             "tracks_total": len(queries),
-            "details": results
+            "details": results,
         }
 
     def _select_best_match(self, search_results: list, query: str) -> Optional[Dict]:
@@ -213,31 +212,31 @@ class BrowserPlaylistManager:
         scored_results = []
         for result in search_results:
             score = 0
-            title_lower = result.get('title', '').lower()
+            title_lower = result.get("title", "").lower()
 
             # Exact title match
             if query_lower in title_lower:
                 score += 10
 
             # Penalize remixes
-            if any(word in title_lower for word in ['remix', 'rmx', 'rework', 'edit']):
+            if any(word in title_lower for word in ["remix", "rmx", "rework", "edit"]):
                 score -= 5
 
             # Penalize live versions
-            if 'live' in title_lower:
+            if "live" in title_lower:
                 score -= 3
 
             # Penalize covers
-            if 'cover' in title_lower:
+            if "cover" in title_lower:
                 score -= 4
 
             # Prefer official/topic channels
-            artists = result.get('artists', [])
-            if artists and any('topic' in a.get('name', '').lower() for a in artists):
+            artists = result.get("artists", [])
+            if artists and any("topic" in a.get("name", "").lower() for a in artists):
                 score += 2
 
             # Prefer explicit matches if in query
-            if 'explicit' in query_lower and result.get('isExplicit'):
+            if "explicit" in query_lower and result.get("isExplicit"):
                 score += 1
 
             scored_results.append((score, result))
@@ -264,20 +263,24 @@ class BrowserPlaylistManager:
 
                 detailed_results = []
                 for item in search_results:
-                    detailed_results.append({
-                        "videoId": item.get('videoId'),
-                        "title": item.get('title'),
-                        "artists": [a['name'] for a in item.get('artists', [])],
-                        "album": item.get('album', {}).get('name'),
-                        "duration": item.get('duration'),
-                        "isExplicit": item.get('isExplicit', False),
-                        "thumbnails": item.get('thumbnails', []),
-                        # Detect remix/live/cover
-                        "isRemix": any(word in item.get('title', '').lower()
-                                     for word in ['remix', 'rmx', 'rework', 'edit']),
-                        "isLive": 'live' in item.get('title', '').lower(),
-                        "isCover": 'cover' in item.get('title', '').lower()
-                    })
+                    detailed_results.append(
+                        {
+                            "videoId": item.get("videoId"),
+                            "title": item.get("title"),
+                            "artists": [a["name"] for a in item.get("artists", [])],
+                            "album": item.get("album", {}).get("name"),
+                            "duration": item.get("duration"),
+                            "isExplicit": item.get("isExplicit", False),
+                            "thumbnails": item.get("thumbnails", []),
+                            # Detect remix/live/cover
+                            "isRemix": any(
+                                word in item.get("title", "").lower()
+                                for word in ["remix", "rmx", "rework", "edit"]
+                            ),
+                            "isLive": "live" in item.get("title", "").lower(),
+                            "isCover": "cover" in item.get("title", "").lower(),
+                        }
+                    )
 
                 results[query] = detailed_results
             except Exception as e:
