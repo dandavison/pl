@@ -13,6 +13,20 @@ logger = logging.getLogger(__name__)
 mcp = FastMCP("YouTubeMusic")
 browser_auth_manager = BrowserAuthManager()
 
+# Version for tracking updates
+VERSION = "1.1.0"
+
+
+@mcp.tool()
+def version() -> Dict[str, Any]:
+    """
+    Get the version of the MCP server.
+
+    Returns:
+        Version information
+    """
+    return {"version": VERSION, "message": f"YouTube Music MCP Server v{VERSION}"}
+
 
 @mcp.tool()
 def ytm_get_browser_auth_instructions() -> Dict[str, Any]:
@@ -66,12 +80,11 @@ def ytm_setup_browser_auth_from_curl(curl_command: str) -> Dict[str, Any]:
 
     try:
         # Debug output
+        print(f"[v{VERSION}] Starting curl parsing...", file=sys.stderr)
         print(f"Received cURL command of length: {len(curl_command)}", file=sys.stderr)
-        
-        # Parse the cURL command
-        # Join lines and clean up backslashes
-        curl_text = " ".join(curl_command.split("\\\n"))
-        curl_text = " ".join(curl_text.split("\\"))
+
+        # Simple approach - just replace backslash-newline
+        curl_text = curl_command.replace("\\\n", " ").replace("\\", " ")
         print(f"Cleaned cURL text length: {len(curl_text)}", file=sys.stderr)
 
         headers = {}
