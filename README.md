@@ -1,56 +1,45 @@
 # YouTube Music MCP Server
 
-An MCP server that allows AI agents to intelligently search for tracks and create playlists on YouTube/YouTube Music using the YouTube Data API v3.
+Create unlimited YouTube Music playlists without API quotas using browser authentication.
 
 ## Features
 
-- **Dual Authentication Methods**:
-  - OAuth (YouTube Data API v3) - Official but has quotas
-  - Browser Auth (ytmusicapi) - No quotas, uses web interface
-- **Intelligent Track Search**: Search for multiple tracks and return detailed metadata for LLM selection
-- **Smart Playlist Creation**: Create playlists with specific video IDs after intelligent selection
-- **No API Quota Limits** (with browser auth): Create unlimited playlists
-- **Metadata-Rich Results**: Returns information about remixes, remasters, view counts, and more
+- **No API quotas** - Create unlimited playlists
+- **No Google Cloud setup** - Uses your existing YouTube Music login
+- **Smart track selection** - Finds the best match for each song
+- **Simple setup** - One-time browser authentication
 
 ## Installation
 
-Prerequisites: `uv` (or pip) and Python 3.10+.
-
-1. Clone the repository.
-2. Install dependencies:
-   ```bash
-   uv sync
-   ```
-
-## Configuration
-
-### Browser Authentication (No API Quotas!)
-
-Extract authentication from your browser session:
-
 ```bash
-# For Chrome users (recommended):
-uv run python extract_from_curl.py  # Paste "Copy as cURL" output
+# Clone the repository
+git clone <this-repo>
+cd ytmusic-mcp
 
-# Alternative methods:
-uv run python extract_from_browser_cookies.py  # Extract cookies directly
-uv run python extract_browser_auth_manual.py   # Guided extraction
-uv run python setup_browser_auth.py            # Paste raw headers
+# Install dependencies
+uv sync
 ```
 
-**Note**: Google blocks automated login ("This browser may not be secure").
-Use the manual extraction from your existing browser session instead.
+## Setup Browser Authentication
 
-This method:
-- ✅ No API quotas - unlimited playlist creation
-- ✅ Uses your existing YouTube Music login
-- ✅ Credentials valid for ~2 years
-- ⚠️ Less suitable for production apps
+1. Save your YouTube Music credentials:
+```bash
+uv run python setup_youtube_music.py
+```
 
+2. Follow the instructions:
+   - Open Chrome and go to music.youtube.com
+   - Press F12 and click the Network tab
+   - Click "Library" in YouTube Music
+   - Find "browse" in the Network tab
+   - Right-click it → Copy → Copy as cURL
+   - Paste into the script
 
-## Usage with Claude Desktop (or other MCP Clients)
+That's it! Your credentials are saved and will work for ~2 years.
 
-Add the server to your MCP configuration file (e.g., `claude_desktop_config.json`):
+## MCP Server Configuration
+
+Add to your MCP client config (e.g., Claude Desktop):
 
 ```json
 {
@@ -68,58 +57,30 @@ Add the server to your MCP configuration file (e.g., `claude_desktop_config.json
 }
 ```
 
-## Tools
+## Available Tools
 
-### Browser Authentication Tools (No Quotas)
+- **ytm_create_playlist_browser** - Create a playlist with a list of track names
+- **ytm_search_browser** - Search for tracks
+- **ytm_validate_browser_auth** - Check if authentication is working
 
-#### `ytm_get_browser_auth_instructions`
-Get step-by-step instructions for setting up browser auth.
-- **Output**: Instructions and current status
+## Usage Example
 
-#### `ytm_setup_browser_auth_from_curl`
-Set up browser authentication using cURL from Chrome.
-- **Input**: `curl_command` (copied from Chrome DevTools)
-- **Output**: Success status and config location
+Once connected to your MCP client, you can say:
 
-#### `ytm_validate_browser_auth`
-Check if browser authentication is working.
-- **Output**: Validation status
+> "Create a playlist called 'Summer Vibes' with these songs: [list of songs]"
 
-#### `ytm_search_browser`
-Search using browser auth (no quotas).
-- **Input**: `queries` (list of search strings)
-- **Output**: Detailed search results
+The server will automatically search for each track and add the best match to your playlist.
 
-#### `ytm_create_playlist_browser`
-Create playlist using browser auth (no quotas).
-- **Input**: `title`, `description`, `tracks`
-- **Output**: Playlist URL and details
+## Troubleshooting
 
-
-## Intelligent Playlist Creation Workflow
-
-The new tools enable a smarter playlist creation workflow:
-
-1. **Search Phase**: Use `ytm_search_tracks` to get multiple results per query
-2. **Selection Phase**: LLM analyzes results based on criteria:
-   - Prefer original recordings over remixes
-   - Prefer original versions over remasters
-   - Consider channel authority (official/label channels)
-   - Avoid full album uploads when searching for single tracks
-   - Consider view count and engagement metrics
-3. **Creation Phase**: Use `ytm_create_playlist_from_ids` with selected video IDs
-
-This approach ensures better quality playlists compared to blindly taking the first search result.
+If you get authentication errors:
+1. Make sure you're logged into YouTube Music in Chrome
+2. Re-run `setup_youtube_music.py` to update your credentials
+3. Check that the browser.json file was created in `~/.config/ytmusic-mcp/`
 
 ## Development
 
 Run tests:
 ```bash
-uv run pytest
+uv run pytest tests/
 ```
-
-Type check:
-```bash
-uv run ty check
-```
-

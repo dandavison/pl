@@ -47,29 +47,6 @@ class BrowserAuthManager:
 
         return self._ytmusic
 
-    def setup_from_headers(self, headers_raw: str) -> str:
-        """
-        Setup browser authentication from raw headers.
-
-        Args:
-            headers_raw: Raw headers copied from browser
-
-        Returns:
-            Success message
-        """
-        import ytmusicapi
-
-        # Use ytmusicapi's setup function to parse headers
-        auth_json = ytmusicapi.setup(headers_raw=headers_raw)
-
-        # Save to file
-        with open(self.browser_json_path, "w") as f:
-            f.write(auth_json)
-
-        # Clear cached instance
-        self._ytmusic = None
-
-        return f"Browser authentication saved to {self.browser_json_path}"
 
     def validate_auth(self) -> Dict[str, Any]:
         """

@@ -7,21 +7,21 @@ from pathlib import Path
 from ytmusic_mcp.server import mcp
 
 
-def has_valid_oauth():
-    """Check if valid OAuth credentials are available."""
-    oauth_path = Path("oauth.json")
-    if not oauth_path.exists():
-        return False
+def has_valid_browser_auth():
+    """Check if valid browser authentication is available."""
+    from pathlib import Path
+    possible_paths = [
+        Path.home() / ".config" / "ytmusic-mcp" / "browser.json",
+        Path.home() / ".ytmusic" / "browser.json",
+        Path("browser.json"),
+    ]
+    for path in possible_paths:
+        if path.exists():
+            return True
+    return False
 
-    try:
-        with open(oauth_path, 'r') as f:
-            oauth_data = json.load(f)
-        return "access_token" in oauth_data
-    except:
-        return False
 
-
-@pytest.mark.skipif(not has_valid_oauth(), reason="No valid OAuth credentials found")
+@pytest.mark.skipif(not has_valid_browser_auth(), reason="No browser authentication found")
 class TestMCPIntegration:
     """Integration tests that require valid OAuth credentials."""
 
@@ -117,7 +117,7 @@ class TestMCPIntegration:
         assert has_remix or len(results) == 0, "Should detect remix in results or have no results"
 
 
-@pytest.mark.skipif(has_valid_oauth(), reason="OAuth credentials available, no need to test without")
+@pytest.mark.skipif(has_valid_browser_auth(), reason="Browser auth available, no need to test without")
 class TestWithoutAuth:
     """Tests for behavior when OAuth is not available."""
 

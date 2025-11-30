@@ -1,14 +1,33 @@
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
+.Python
+env/
+venv/
 .venv/
-oauth.json
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
 
-
-# OAuth files
+# Personal config
+.config/
+browser.json
 oauth.json
 oauth_creds.json
-oauth*.json
+curl.txt
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Package
+dist/
+build/
+*.egg-info/

@@ -87,18 +87,22 @@ def main():
     if "authorization" in data:
         browser_json["Authorization"] = data["authorization"]
 
-    # Save to browser.json
-    with open("browser.json", "w") as f:
+    # Save to user config directory
+    config_dir = Path.home() / ".config" / "ytmusic-mcp"
+    config_dir.mkdir(parents=True, exist_ok=True)
+    config_path = config_dir / "browser.json"
+
+    with open(config_path, "w") as f:
         json.dump(browser_json, f, indent=2)
 
-    print("💾 Saved to browser.json")
+    print(f"💾 Saved to {config_path}")
 
     # Test it
     print("\n🔍 Testing with ytmusicapi...")
     try:
         from ytmusicapi import YTMusic
 
-        ytmusic = YTMusic("browser.json")
+        ytmusic = YTMusic(str(config_path))
         results = ytmusic.search("test", limit=1)
         if results:
             print("✅ SUCCESS! Authentication is working!")
