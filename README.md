@@ -10,9 +10,7 @@ MCP server for YouTube Music playlist creation using browser authentication.
     "ytmusic": {
       "command": "uvx",
       "args": [
-        "--from",
         "git+https://github.com/dandavison/pl",
-        "ytmusic-mcp"
       ]
     }
   }
