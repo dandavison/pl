@@ -14,7 +14,7 @@ mcp = FastMCP("YouTubeMusic")
 browser_auth_manager = BrowserAuthManager()
 
 # Version for tracking updates
-VERSION = "1.2.1"
+VERSION = "1.3.0"
 
 
 @mcp.tool()
@@ -69,6 +69,49 @@ This gives you unlimited playlist creation with no daily limits!
         "config_path": str(config_path),
         "instructions": instructions,
     }
+
+
+@mcp.tool()
+def setup_youtube_music_from_file() -> Dict[str, Any]:
+    """
+    Connect your YouTube Music account using headers from a file.
+    
+    Put your headers in ~/.config/ytmusic-mcp/headers.txt first.
+    
+    Returns:
+        Setup status
+    """
+    import json
+    import sys
+    import time
+    
+    headers_file = Path.home() / ".config" / "ytmusic-mcp" / "headers.txt"
+    
+    if not headers_file.exists():
+        headers_file.parent.mkdir(parents=True, exist_ok=True)
+        return {
+            "success": False,
+            "error": f"Please save your browser headers to {headers_file} first",
+            "instructions": "Copy the Request Headers from Chrome DevTools and save them to the file above"
+        }
+    
+    try:
+        headers_raw = headers_file.read_text()
+        print(f"[v{VERSION}] Read {len(headers_raw)} chars from headers.txt", file=sys.stderr)
+        
+        # Process the headers using the same logic
+        result = setup_youtube_music(headers_raw)
+        
+        # Delete the headers file after successful setup for security
+        if result.get("success"):
+            headers_file.unlink()
+            print("Deleted headers.txt for security", file=sys.stderr)
+            
+        return result
+    except Exception as e:
+        import traceback
+        traceback.print_exc(file=sys.stderr)
+        return {"success": False, "error": str(e)}
 
 
 @mcp.tool()
