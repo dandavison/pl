@@ -116,14 +116,11 @@ def ytm_setup_browser_auth_from_curl(curl_command: str) -> Dict[str, Any]:
         with open(config_path, "w") as f:
             json.dump(browser_json, f, indent=2)
 
-        # Test it
-        validation = browser_auth_manager.validate_auth()
-
+        # Don't validate immediately - it might hang
         return {
             "success": True,
             "config_path": str(config_path),
-            "valid": validation.get("valid", False),
-            "message": "Browser authentication configured successfully! You can now create unlimited playlists."
+            "message": "Browser authentication saved! Use ytm_validate_browser_auth to test it."
         }
 
     except Exception as e:
