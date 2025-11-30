@@ -14,7 +14,7 @@ mcp = FastMCP("YouTubeMusic")
 browser_auth_manager = BrowserAuthManager()
 
 # Version for tracking updates
-VERSION = "1.2.0"
+VERSION = "1.2.1"
 
 
 @mcp.tool()
@@ -84,9 +84,12 @@ def setup_youtube_music(headers_raw: str) -> Dict[str, Any]:
     """
     import json
     import sys
+    import time
 
+    start_time = time.time()
+    
     try:
-        print(f"[v{VERSION}] Processing headers...", file=sys.stderr)
+        print(f"[v{VERSION}] Starting setup_youtube_music", file=sys.stderr)
 
         # First try to parse as JSON (Chrome's "Copy as fetch" format)
         try:
@@ -151,8 +154,11 @@ def setup_youtube_music(headers_raw: str) -> Dict[str, Any]:
 
         with open(config_path, "w") as f:
             json.dump(browser_json, f, indent=2)
-        print("Successfully saved browser.json", file=sys.stderr)
+        
+        elapsed = time.time() - start_time
+        print(f"Successfully saved browser.json in {elapsed:.2f}s", file=sys.stderr)
 
+        # Return a simple dictionary
         return {
             "success": True,
             "config_path": str(config_path),
@@ -210,9 +216,7 @@ def search_songs(queries: List[str]) -> Dict[str, Any]:
 
 
 @mcp.tool()
-def create_playlist(
-    title: str, description: str, tracks: List[str]
-) -> Dict[str, Any]:
+def create_playlist(title: str, description: str, tracks: List[str]) -> Dict[str, Any]:
     """
     Create a YouTube Music playlist.
 
