@@ -85,12 +85,12 @@ def ytm_setup_browser_auth(headers_raw: str) -> Dict[str, Any]:
     Returns:
         Setup status and result
     """
-    import sys
     import json
+    import sys
 
     try:
         print(f"[v{VERSION}] Processing headers...", file=sys.stderr)
-        
+
         # First try to parse as JSON (Chrome's "Copy as fetch" format)
         try:
             headers_dict = json.loads(headers_raw)
@@ -99,39 +99,39 @@ def ytm_setup_browser_auth(headers_raw: str) -> Dict[str, Any]:
             # Parse as raw headers text (Firefox format or Chrome's raw headers)
             print("Parsing as raw headers text", file=sys.stderr)
             headers_dict = {}
-            
-            for line in headers_raw.split('\n'):
+
+            for line in headers_raw.split("\n"):
                 line = line.strip()
-                if line and ':' in line:
-                    key, value = line.split(':', 1)
+                if line and ":" in line:
+                    key, value = line.split(":", 1)
                     # Normalize header names to match what ytmusicapi expects
                     key = key.strip()
-                    if key.lower() == 'cookie':
-                        headers_dict['Cookie'] = value.strip()
-                    elif key.lower() == 'authorization':
-                        headers_dict['Authorization'] = value.strip()
-                    elif key.lower() == 'x-goog-authuser':
-                        headers_dict['X-Goog-AuthUser'] = value.strip()
-                    elif key.lower() == 'content-type':
-                        headers_dict['Content-Type'] = value.strip()
-                    elif key.lower() == 'accept':
-                        headers_dict['Accept'] = value.strip()
-                    elif key.lower() == 'x-origin':
-                        headers_dict['x-origin'] = value.strip()
-        
+                    if key.lower() == "cookie":
+                        headers_dict["Cookie"] = value.strip()
+                    elif key.lower() == "authorization":
+                        headers_dict["Authorization"] = value.strip()
+                    elif key.lower() == "x-goog-authuser":
+                        headers_dict["X-Goog-AuthUser"] = value.strip()
+                    elif key.lower() == "content-type":
+                        headers_dict["Content-Type"] = value.strip()
+                    elif key.lower() == "accept":
+                        headers_dict["Accept"] = value.strip()
+                    elif key.lower() == "x-origin":
+                        headers_dict["x-origin"] = value.strip()
+
         print(f"Found {len(headers_dict)} headers", file=sys.stderr)
-        
+
         # Check for required fields
-        if 'Cookie' not in headers_dict:
+        if "Cookie" not in headers_dict:
             return {
                 "success": False,
                 "error": "No Cookie header found. Make sure you copied from an authenticated POST request.",
             }
-        
+
         # Check for required cookie
-        if "__Secure-3PAPISID" not in headers_dict.get('Cookie', ''):
+        if "__Secure-3PAPISID" not in headers_dict.get("Cookie", ""):
             print("Warning: Missing __Secure-3PAPISID cookie", file=sys.stderr)
-        
+
         # Create browser.json structure matching ytmusicapi's expected format
         browser_json = {
             "Accept": headers_dict.get("Accept", "*/*"),
@@ -139,13 +139,13 @@ def ytm_setup_browser_auth(headers_raw: str) -> Dict[str, Any]:
             "Content-Type": headers_dict.get("Content-Type", "application/json"),
             "X-Goog-AuthUser": headers_dict.get("X-Goog-AuthUser", "0"),
             "x-origin": headers_dict.get("x-origin", "https://music.youtube.com"),
-            "Cookie": headers_dict["Cookie"]
+            "Cookie": headers_dict["Cookie"],
         }
-        
+
         # Remove empty Authorization if not present
         if not browser_json["Authorization"]:
             del browser_json["Authorization"]
-        
+
         # Save to user config directory
         config_dir = Path.home() / ".config" / "ytmusic-mcp"
         config_dir.mkdir(parents=True, exist_ok=True)
@@ -165,6 +165,7 @@ def ytm_setup_browser_auth(headers_raw: str) -> Dict[str, Any]:
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         import traceback
+
         traceback.print_exc(file=sys.stderr)
         return {"success": False, "error": str(e)}
 
