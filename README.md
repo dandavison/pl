@@ -1,3 +1,5 @@
+_ARCHIVED: this is becoming available natively in YouTube Music: https://gemini.google.com/apps_
+
 # YouTube Music MCP Server
 
 MCP server for YouTube Music playlist creation using browser authentication.
