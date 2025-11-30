@@ -47,11 +47,20 @@ To set up browser authentication (no API quotas!):
 
 1. Open Chrome and go to https://music.youtube.com
 2. Make sure you're logged in to your Google account
-3. Press F12 for Developer Tools and then inside the dev tools click the "Network" tab
+3. Press F12 for Developer Tools and click the "Network" tab
 4. Back in YouTube Music click on "Library" or "Home" to generate some requests
-5. In the dev tools, find a request that says "browse" in the "Name" column
-6. Right-click on it → Copy → Copy as cURL
-7. Send the cURL command using ytm_setup_browser_auth_from_curl
+5. Find a request that says "browse" in the "Name" column
+
+For Chrome:
+- Click on the "browse" request
+- In the Headers tab, scroll to "Request Headers"
+- Copy everything from "accept: */*" to the end of that section
+- OR right-click → Copy → Copy as fetch (Node.js) and extract just the headers object
+
+For Firefox:
+- Right-click on the "browse" request → Copy → Copy Request Headers
+
+6. Use ytm_setup_browser_auth with the copied headers
 
 This gives you unlimited playlist creation with no daily limits!
 """
@@ -64,86 +73,89 @@ This gives you unlimited playlist creation with no daily limits!
 
 
 @mcp.tool()
-def ytm_setup_browser_auth_from_curl(curl_command: str) -> Dict[str, Any]:
+def ytm_setup_browser_auth(headers_raw: str) -> Dict[str, Any]:
     """
-    Set up browser authentication using a cURL command from Chrome DevTools.
+    Set up browser authentication using raw headers from Chrome/Firefox DevTools.
     This is the recommended method to avoid API quotas.
 
     Args:
-        curl_command: The full cURL command copied from Chrome DevTools
+        headers_raw: The raw request headers copied from DevTools (not cURL format)
+                    Either as raw headers text or as JSON
 
     Returns:
         Setup status and result
     """
-    import re
     import sys
+    import json
 
     try:
-        # Debug output
-        print(f"[v{VERSION}] Starting curl parsing...", file=sys.stderr)
-        print(f"Received cURL command of length: {len(curl_command)}", file=sys.stderr)
-
-        # Simple approach - just replace backslash-newline
-        curl_text = curl_command.replace("\\\n", " ").replace("\\", " ")
-        print(f"Cleaned cURL text length: {len(curl_text)}", file=sys.stderr)
-
-        headers = {}
-
-        # Extract headers
-        header_pattern = r"-H\s+['\"]([^'\"]+)['\"]"
-        header_count = 0
-        for match in re.finditer(header_pattern, curl_text):
-            header_line = match.group(1)
-            if ":" in header_line:
-                key, value = header_line.split(":", 1)
-                headers[key.strip().lower()] = value.strip()
-                header_count += 1
-        print(f"Found {header_count} headers", file=sys.stderr)
-
-        # Extract cookies
-        cookie_pattern = r"-b\s+['\"]([^'\"]+)['\"]"
-        cookie_match = re.search(cookie_pattern, curl_text)
-        if cookie_match:
-            headers["cookie"] = cookie_match.group(1).strip()
-            print(f"Found cookies (length: {len(headers['cookie'])})", file=sys.stderr)
-
-        if not headers.get("cookie"):
+        print(f"[v{VERSION}] Processing headers...", file=sys.stderr)
+        
+        # First try to parse as JSON (Chrome's "Copy as fetch" format)
+        try:
+            headers_dict = json.loads(headers_raw)
+            print("Detected JSON format", file=sys.stderr)
+        except json.JSONDecodeError:
+            # Parse as raw headers text (Firefox format or Chrome's raw headers)
+            print("Parsing as raw headers text", file=sys.stderr)
+            headers_dict = {}
+            
+            for line in headers_raw.split('\n'):
+                line = line.strip()
+                if line and ':' in line:
+                    key, value = line.split(':', 1)
+                    # Normalize header names to match what ytmusicapi expects
+                    key = key.strip()
+                    if key.lower() == 'cookie':
+                        headers_dict['Cookie'] = value.strip()
+                    elif key.lower() == 'authorization':
+                        headers_dict['Authorization'] = value.strip()
+                    elif key.lower() == 'x-goog-authuser':
+                        headers_dict['X-Goog-AuthUser'] = value.strip()
+                    elif key.lower() == 'content-type':
+                        headers_dict['Content-Type'] = value.strip()
+                    elif key.lower() == 'accept':
+                        headers_dict['Accept'] = value.strip()
+                    elif key.lower() == 'x-origin':
+                        headers_dict['x-origin'] = value.strip()
+        
+        print(f"Found {len(headers_dict)} headers", file=sys.stderr)
+        
+        # Check for required fields
+        if 'Cookie' not in headers_dict:
             return {
                 "success": False,
-                "error": "No cookies found in cURL command. Make sure you're logged in and copied from a POST request.",
+                "error": "No Cookie header found. Make sure you copied from an authenticated POST request.",
             }
-
+        
         # Check for required cookie
-        if "__Secure-3PAPISID" not in headers["cookie"]:
+        if "__Secure-3PAPISID" not in headers_dict.get('Cookie', ''):
             print("Warning: Missing __Secure-3PAPISID cookie", file=sys.stderr)
-
-        # Create browser.json structure
+        
+        # Create browser.json structure matching ytmusicapi's expected format
         browser_json = {
-            "User-Agent": headers.get("user-agent", "Mozilla/5.0"),
-            "Accept": headers.get("accept", "*/*"),
-            "Accept-Language": headers.get("accept-language", "en-US,en;q=0.9"),
-            "Content-Type": headers.get("content-type", "application/json"),
-            "X-Goog-AuthUser": headers.get("x-goog-authuser", "0"),
-            "x-origin": headers.get("x-origin", "https://music.youtube.com"),
-            "Cookie": headers["cookie"],
+            "Accept": headers_dict.get("Accept", "*/*"),
+            "Authorization": headers_dict.get("Authorization", ""),
+            "Content-Type": headers_dict.get("Content-Type", "application/json"),
+            "X-Goog-AuthUser": headers_dict.get("X-Goog-AuthUser", "0"),
+            "x-origin": headers_dict.get("x-origin", "https://music.youtube.com"),
+            "Cookie": headers_dict["Cookie"]
         }
-
-        if "authorization" in headers:
-            browser_json["Authorization"] = headers["authorization"]
-
+        
+        # Remove empty Authorization if not present
+        if not browser_json["Authorization"]:
+            del browser_json["Authorization"]
+        
         # Save to user config directory
         config_dir = Path.home() / ".config" / "ytmusic-mcp"
         config_dir.mkdir(parents=True, exist_ok=True)
         config_path = config_dir / "browser.json"
         print(f"Saving to {config_path}", file=sys.stderr)
 
-        import json
-
         with open(config_path, "w") as f:
             json.dump(browser_json, f, indent=2)
         print("Successfully saved browser.json", file=sys.stderr)
 
-        # Don't validate immediately - it might hang
         return {
             "success": True,
             "config_path": str(config_path),
@@ -152,6 +164,8 @@ def ytm_setup_browser_auth_from_curl(curl_command: str) -> Dict[str, Any]:
 
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
+        import traceback
+        traceback.print_exc(file=sys.stderr)
         return {"success": False, "error": str(e)}
 
 
