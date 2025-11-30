@@ -14,7 +14,7 @@ mcp = FastMCP("YouTubeMusic")
 browser_auth_manager = BrowserAuthManager()
 
 # Version for tracking updates
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 
 
 @mcp.tool()
@@ -29,10 +29,9 @@ def version() -> Dict[str, Any]:
 
 
 @mcp.tool()
-def ytm_get_browser_auth_instructions() -> Dict[str, Any]:
+def get_setup_instructions() -> Dict[str, Any]:
     """
-    Get instructions for setting up browser authentication.
-    This avoids API quotas completely.
+    Get instructions for connecting your YouTube Music account.
 
     Returns:
         Instructions and current status
@@ -60,7 +59,7 @@ For Chrome:
 For Firefox:
 - Right-click on the "browse" request → Copy → Copy Request Headers
 
-6. Use ytm_setup_browser_auth with the copied headers
+6. Use setup_youtube_music with the copied headers
 
 This gives you unlimited playlist creation with no daily limits!
 """
@@ -73,17 +72,15 @@ This gives you unlimited playlist creation with no daily limits!
 
 
 @mcp.tool()
-def ytm_setup_browser_auth(headers_raw: str) -> Dict[str, Any]:
+def setup_youtube_music(headers_raw: str) -> Dict[str, Any]:
     """
-    Set up browser authentication using raw headers from Chrome/Firefox DevTools.
-    This is the recommended method to avoid API quotas.
+    Connect your YouTube Music account for unlimited playlist creation.
 
     Args:
-        headers_raw: The raw request headers copied from DevTools (not cURL format)
-                    Either as raw headers text or as JSON
+        headers_raw: The request headers copied from your browser
 
     Returns:
-        Setup status and result
+        Setup status
     """
     import json
     import sys
@@ -159,7 +156,7 @@ def ytm_setup_browser_auth(headers_raw: str) -> Dict[str, Any]:
         return {
             "success": True,
             "config_path": str(config_path),
-            "message": "Browser authentication saved! Use ytm_validate_browser_auth to test it.",
+            "message": "YouTube Music connected successfully! You can now create playlists.",
         }
 
     except Exception as e:
@@ -171,38 +168,37 @@ def ytm_setup_browser_auth(headers_raw: str) -> Dict[str, Any]:
 
 
 @mcp.tool()
-def ytm_validate_browser_auth() -> Dict[str, Any]:
+def test_connection() -> Dict[str, Any]:
     """
-    Validate that browser authentication is working.
+    Test your YouTube Music connection.
 
     Returns:
-        Dictionary with validation status and details
+        Connection status
     """
     if not browser_auth_manager.is_authenticated():
         return {
             "valid": False,
-            "message": "No browser authentication found. Run ytm_setup_browser_auth first.",
+            "message": "YouTube Music not connected. Please run setup_youtube_music first.",
         }
 
     return browser_auth_manager.validate_auth()
 
 
 @mcp.tool()
-def ytm_search_browser(queries: List[str]) -> Dict[str, Any]:
+def search_songs(queries: List[str]) -> Dict[str, Any]:
     """
-    Search for tracks using browser authentication (no API quotas).
-    Returns detailed results for intelligent selection.
+    Search for songs on YouTube Music.
 
     Args:
-        queries: List of search queries
+        queries: List of song names to search for
 
     Returns:
-        Dictionary mapping queries to search results
+        Search results for each query
     """
     try:
         if not browser_auth_manager.is_authenticated():
             return {
-                "error": "Browser auth not configured. Run ytm_setup_browser_auth first."
+                "error": "YouTube Music not connected. Please run setup_youtube_music first."
             }
 
         ytmusic = browser_auth_manager.get_ytmusic()
@@ -214,25 +210,24 @@ def ytm_search_browser(queries: List[str]) -> Dict[str, Any]:
 
 
 @mcp.tool()
-def ytm_create_playlist_browser(
+def create_playlist(
     title: str, description: str, tracks: List[str]
 ) -> Dict[str, Any]:
     """
-    Create playlist using browser authentication (no API quotas).
-    This method searches for tracks and adds the best matches automatically.
+    Create a YouTube Music playlist.
 
     Args:
-        title: Playlist title
-        description: Playlist description
-        tracks: List of search queries
+        title: Name of your playlist
+        description: Description of your playlist
+        tracks: List of song names to add
 
     Returns:
-        Dictionary with playlist details and results
+        Playlist creation results
     """
     try:
         if not browser_auth_manager.is_authenticated():
             return {
-                "error": "Browser auth not configured. Run ytm_setup_browser_auth first."
+                "error": "YouTube Music not connected. Please run setup_youtube_music first."
             }
 
         ytmusic = browser_auth_manager.get_ytmusic()
